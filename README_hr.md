@@ -8,12 +8,31 @@ Bearer autentikaciju, JSON envelope, problem odgovore, request ID, otkrivanje
 scopeova i administraciju API ključeva, dok Auth i budući domenski moduli
 zadržavaju svoja poslovna pravila.
 
-## Preduvjeti
+## Ovisnosti
 
-- PHP 8.2 ili noviji
-- `aaieduhr/heartphrame-framework`
-- `aaieduhr/heartphrame-module-auth` uključen prije ovog modula
-- `aaieduhr/heartphrame-module-orm`
+Obavezno, redoslijedom uključivanja:
+
+1. `aaieduhr/heartphrame-framework` (`dev-main`)
+2. `aaieduhr/heartphrame-module-orm` (`dev-main`)
+3. `aaieduhr/heartphrame-module-auth` (`dev-main`)
+4. `aaieduhr/heartphrame-module-api` (`dev-main`)
+
+Opcionalne domenske integracije:
+
+- Calendar: CRUD kalendara/događaja i ICS.
+- HTML Editor: stranice, verzije, prijevodi i privitci.
+- Notification: inbox i stanje pročitanosti vlasnika API ključa.
+- Task: stanje objavljenih zadataka i audit.
+- Workspace: ACL resursi i upravljanje stablom.
+
+Theme i Menu samo su opcionalne prezentacijske integracije. Detaljni primjeri
+nalaze se u `docs/dependencies_hr.md` i domenskim vodičima u `docs/`.
+
+```bash
+composer require aaieduhr/heartphrame-module-api:dev-main
+vendor/bin/hph api:install-migration
+vendor/bin/hph orm-migrate:up
+```
 
 Theme i Menu nisu obavezni. Ekran API ključeva koristi Bootstrap-kompatibilan
 HTML i framework zadane stilove kada Theme nije prisutan. Ako je Menu

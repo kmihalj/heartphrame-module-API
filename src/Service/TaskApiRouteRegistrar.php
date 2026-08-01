@@ -7,7 +7,6 @@ namespace AaiEduHr\HeartPhrameModuleApi\Service;
 use AaiEduHr\HeartPhrameModuleApi\Controller\TaskResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiAuthenticationMiddleware;
 use AaiEduHr\HeartPhrameModuleTask\Api\TaskApiService;
-use AaiEduHr\HeartPhrameModuleTask\ModuleTask;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\Routing\Routes;
@@ -20,6 +19,8 @@ use HeartPhrame\Routing\Routes;
  */
 final readonly class TaskApiRouteRegistrar
 {
+    private const PACKAGE = 'aaieduhr/heartphrame-module-task';
+
     /**
      * HR: Prima stanje paketa, konfiguraciju i zajednički router.
      * EN: Receives package state, configuration, and the shared router.
@@ -60,8 +61,8 @@ final readonly class TaskApiRouteRegistrar
     {
         $enabled = $this->config->getAsArrayWithValuesAsNonEmptyStrings('app.modules.enabled') ?? [];
 
-        return $this->composer->isInstalled(ModuleTask::PACKAGE_NAME)
-            && in_array(ModuleTask::PACKAGE_NAME, $enabled, true)
+        return $this->composer->isInstalled(self::PACKAGE)
+            && in_array(self::PACKAGE, $enabled, true)
             && class_exists(TaskApiService::class);
     }
 

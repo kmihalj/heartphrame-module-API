@@ -11,6 +11,26 @@ POST   /api/v1/notifications/read-all
 DELETE /api/v1/notifications/{uuid}
 ```
 
+## cURL example and response
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Accept: application/json' \
+  "$HPH_API_URL/notifications"
+```
+
+```json
+{
+  "data": [{"uuid": "79aa...", "title": "Review requested", "is_read": false}],
+  "meta": {"request_id": "req_..."},
+  "links": {"self": "/api/v1/notifications"}
+}
+```
+
+The endpoint always uses the API-key owner; a user ID cannot be supplied to
+read another inbox. See [API quick start](quickstart_en.md) for PHP usage.
+
 `notifications:read` permits listing and reading the API-key owner's messages.
 `notifications:write` permits changing read state and removing an owned message
 after it is read. An API key can never inspect or modify another user's inbox.

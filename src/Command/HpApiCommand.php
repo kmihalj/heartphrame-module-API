@@ -99,7 +99,7 @@ final readonly class HpApiCommand
         }
 
         $this->write(__('Kreirana je početna API migracija: ') . $target);
-        $this->write(__('Sljedeći korak: pokreni `vendor/bin/hph orm-migrate up`.'));
+        $this->write(__('Sljedeći korak: pokreni `vendor/bin/hph orm-migrate:up`.'));
 
         return 0;
     }
@@ -111,7 +111,7 @@ final readonly class HpApiCommand
     public function help(): int
     {
         $this->write('hph api <install|webhooks:worker|webhooks:status|help>');
-        $this->write('  vendor/bin/hph api install');
+        $this->write('  vendor/bin/hph api:install-migration');
         $this->write('  vendor/bin/hph api webhooks:worker --batch-size=20');
         $this->write('  vendor/bin/hph api webhooks:worker --watch --sleep=5');
         $this->write('  vendor/bin/hph api webhooks:status');

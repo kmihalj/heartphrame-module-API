@@ -17,6 +17,26 @@ PUT /api/v1/pages/{documentId}/tasks/{taskUuid}/state?lang=en
 GET /api/v1/pages/{documentId}/tasks/{taskUuid}/history?lang=en&limit=50
 ```
 
+## cURL example and response
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Accept: application/json' \
+  "$HPH_API_URL/pages/42/tasks?lang=en"
+```
+
+```json
+{
+  "data": [{"uuid": "task-...", "label": "Publish guide", "completed": false}],
+  "meta": {"request_id": "req_..."},
+  "links": {"self": "/api/v1/pages/42/tasks?lang=en"}
+}
+```
+
+Definitions come from the published Editor document; mutable state comes from
+Task tables. See [API quick start](quickstart_en.md) for PHP and write examples.
+
 State request:
 
 ```json

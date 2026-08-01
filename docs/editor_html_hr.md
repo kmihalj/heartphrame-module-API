@@ -95,6 +95,28 @@ bajtove sa spremljenim MIME tipom i nazivom datoteke.
 
 ## Odgovori i greške
 
+### cURL primjer čitanja
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Accept: application/json' \
+  "$HPH_API_URL/pages"
+```
+
+Reprezentativni odgovor:
+
+```json
+{
+  "data": [{"id": 42, "document_key": "dobrodosli", "language": "hr"}],
+  "meta": {"request_id": "req_..."},
+  "links": {"self": "/api/v1/pages"}
+}
+```
+
+Rezultat je filtriran ACL-om. PHP klijent, idempotentni write primjer i obrada
+problem odgovora nalaze se u [brzom početku](quickstart_hr.md).
+
 JSON resursi koriste zajednički API envelope:
 
 ```json

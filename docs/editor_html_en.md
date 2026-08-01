@@ -93,6 +93,28 @@ route streams the original bytes with their stored media type and filename.
 
 ## Responses and errors
 
+### cURL read example
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Accept: application/json' \
+  "$HPH_API_URL/pages"
+```
+
+Representative response:
+
+```json
+{
+  "data": [{"id": 42, "document_key": "welcome", "language": "en"}],
+  "meta": {"request_id": "req_..."},
+  "links": {"self": "/api/v1/pages"}
+}
+```
+
+The result is ACL-filtered. Use [API quick start](quickstart_en.md) for the PHP
+client, idempotent write example, and problem response handling.
+
 JSON resources use the common API envelope:
 
 ```json

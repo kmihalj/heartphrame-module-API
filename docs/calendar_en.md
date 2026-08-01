@@ -28,6 +28,28 @@ PATCH  /api/v1/calendars/{calendarUuid}/events/{eventId}
 DELETE /api/v1/calendars/{calendarUuid}/events/{eventId}
 ```
 
+## cURL example and response
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Accept: application/json' \
+  "$HPH_API_URL/calendars"
+```
+
+Representative response:
+
+```json
+{
+  "data": [{"uuid": "6d5e...", "name": "Team calendar"}],
+  "meta": {"request_id": "req_..."},
+  "links": {"self": "/api/v1/calendars"}
+}
+```
+
+Only calendars readable by the API-key owner appear. Use the common PHP client
+and error handling from [API quick start](quickstart_en.md).
+
 Event ranges are inclusive and may use `expand_recurring=0` to return source
 events without expanded recurrence instances. ACL replacement accepts a
 `rules` JSON list of user/group subjects and read/write flags. ICS returns

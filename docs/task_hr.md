@@ -17,6 +17,26 @@ PUT /api/v1/pages/{documentId}/tasks/{taskUuid}/state?lang=hr
 GET /api/v1/pages/{documentId}/tasks/{taskUuid}/history?lang=hr&limit=50
 ```
 
+## cURL primjer i odgovor
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Accept: application/json' \
+  "$HPH_API_URL/pages/42/tasks?lang=hr"
+```
+
+```json
+{
+  "data": [{"uuid": "task-...", "label": "Objavi upute", "completed": false}],
+  "meta": {"request_id": "req_..."},
+  "links": {"self": "/api/v1/pages/42/tasks?lang=hr"}
+}
+```
+
+Definicije dolaze iz objavljenog Editor dokumenta, a promjenjivo stanje iz Task
+tablica. PHP i write primjeri nalaze se u [brzom početku](quickstart_hr.md).
+
 Tijelo promjene stanja:
 
 ```json

@@ -7,7 +7,6 @@ namespace AaiEduHr\HeartPhrameModuleApi\Service;
 use AaiEduHr\HeartPhrameModuleApi\Controller\WorkspaceResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiAuthenticationMiddleware;
 use AaiEduHr\HeartPhrameModuleWorkspace\Api\WorkspaceApiService;
-use AaiEduHr\HeartPhrameModuleWorkspace\ModuleWorkspace;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\Routing\Routes;
@@ -21,6 +20,8 @@ use HeartPhrame\Routing\Routes;
  */
 final readonly class WorkspaceApiRouteRegistrar
 {
+    private const PACKAGE = 'aaieduhr/heartphrame-module-workspace';
+
     /**
      * HR: Prima Composer stanje, konfiguraciju uključenih modula i zajednički router.
      * EN: Receives Composer state, enabled-module configuration, and the shared router.
@@ -61,8 +62,8 @@ final readonly class WorkspaceApiRouteRegistrar
     {
         $enabled = $this->config->getAsArrayWithValuesAsNonEmptyStrings('app.modules.enabled') ?? [];
 
-        return $this->composer->isInstalled(ModuleWorkspace::PACKAGE_NAME)
-            && in_array(ModuleWorkspace::PACKAGE_NAME, $enabled, true)
+        return $this->composer->isInstalled(self::PACKAGE)
+            && in_array(self::PACKAGE, $enabled, true)
             && class_exists(WorkspaceApiService::class);
     }
 

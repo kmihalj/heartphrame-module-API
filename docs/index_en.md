@@ -1,5 +1,8 @@
 # API module: architecture and usage
 
+New users should begin with the complete
+[cURL and PHP quick start](quickstart_en.md).
+
 ## Responsibilities
 
 The API module handles HTTP but never reads another module's tables:

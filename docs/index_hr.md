@@ -1,5 +1,8 @@
 # API modul: arhitektura i uporaba
 
+Novi korisnici trebaju krenuti od potpunog
+[cURL i PHP brzog početka](quickstart_hr.md).
+
 ## Odgovornosti
 
 API modul obrađuje HTTP protokol, ali ne čita tablice drugih modula:

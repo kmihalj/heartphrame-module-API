@@ -27,6 +27,28 @@ PATCH  /api/v1/calendars/{calendarUuid}/events/{eventId}
 DELETE /api/v1/calendars/{calendarUuid}/events/{eventId}
 ```
 
+## cURL primjer i odgovor
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Accept: application/json' \
+  "$HPH_API_URL/calendars"
+```
+
+Reprezentativni odgovor:
+
+```json
+{
+  "data": [{"uuid": "6d5e...", "name": "Timski kalendar"}],
+  "meta": {"request_id": "req_..."},
+  "links": {"self": "/api/v1/calendars"}
+}
+```
+
+Vraćaju se samo kalendari koje vlasnik API ključa smije čitati. Zajednički
+PHP klijent i obrada grešaka nalaze se u [brzom početku](quickstart_hr.md).
+
 Raspon događaja uključuje oba rubna datuma. `expand_recurring=0` vraća izvorne
 događaje bez proširenih ponavljanja. Zamjena ACL-a prima JSON listu `rules` s
 korisničkim/grupnim subjektima i read/write zastavicama. ICS vraća

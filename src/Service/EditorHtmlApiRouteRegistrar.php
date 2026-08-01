@@ -7,7 +7,6 @@ namespace AaiEduHr\HeartPhrameModuleApi\Service;
 use AaiEduHr\HeartPhrameModuleApi\Controller\EditorHtmlResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiAuthenticationMiddleware;
 use AaiEduHr\HeartPhrameModuleEditorHtml\Api\EditorHtmlApiService;
-use AaiEduHr\HeartPhrameModuleEditorHtml\ModuleEditorHtml;
 use HeartPhrame\Bridge\ComposerBridge;
 use HeartPhrame\Config\ConfigInterface;
 use HeartPhrame\Routing\Routes;
@@ -24,6 +23,8 @@ use function in_array;
  */
 final readonly class EditorHtmlApiRouteRegistrar
 {
+    private const PACKAGE = 'aaieduhr/heartphrame-module-editor-html';
+
     /**
      * HR: Prima Composer stanje, konfiguraciju uključenih modula i zajednički router.
      * EN: Receives Composer state, enabled-module configuration, and the shared router.
@@ -64,8 +65,8 @@ final readonly class EditorHtmlApiRouteRegistrar
     {
         $enabled = $this->config->getAsArrayWithValuesAsNonEmptyStrings('app.modules.enabled') ?? [];
 
-        return $this->composer->isInstalled(ModuleEditorHtml::PACKAGE_NAME)
-            && in_array(ModuleEditorHtml::PACKAGE_NAME, $enabled, true)
+        return $this->composer->isInstalled(self::PACKAGE)
+            && in_array(self::PACKAGE, $enabled, true)
             && class_exists(EditorHtmlApiService::class);
     }
 

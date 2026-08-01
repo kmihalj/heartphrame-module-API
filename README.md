@@ -8,12 +8,31 @@ modules: it owns Bearer authentication, JSON envelopes, problem responses,
 request IDs, scope discovery, and API-key administration, while Auth and later
 domain modules keep their business rules.
 
-## Requirements
+## Dependencies
 
-- PHP 8.2 or newer
-- `aaieduhr/heartphrame-framework`
-- `aaieduhr/heartphrame-module-auth` enabled before this module
-- `aaieduhr/heartphrame-module-orm`
+Required, in enable order:
+
+1. `aaieduhr/heartphrame-framework` (`dev-main`)
+2. `aaieduhr/heartphrame-module-orm` (`dev-main`)
+3. `aaieduhr/heartphrame-module-auth` (`dev-main`)
+4. `aaieduhr/heartphrame-module-api` (`dev-main`)
+
+Optional domain integrations:
+
+- Calendar: calendar/event CRUD and ICS.
+- HTML Editor: pages, versions, translations, and attachments.
+- Notification: the API-key owner's inbox and read state.
+- Task: published task state and audit.
+- Workspace: ACL-aware resources and tree management.
+
+Theme and Menu are presentation-only optional integrations. Detailed examples
+are in `docs/dependencies_en.md` and the domain guides under `docs/`.
+
+```bash
+composer require aaieduhr/heartphrame-module-api:dev-main
+vendor/bin/hph api:install-migration
+vendor/bin/hph orm-migrate:up
+```
 
 Theme and Menu are optional. The API-key screen uses Bootstrap-compatible
 markup and framework fallbacks when Theme is absent. When Menu is installed,
