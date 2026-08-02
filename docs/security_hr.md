@@ -33,6 +33,28 @@ JSON write prihvaća `application/json` i ograničava veličinu prije dekodiranj
 Greške koriste RFC 9457 problem JSON i request ID. Ako sigurnosna shema nije
 dostupna, zaštita write zahtjeva zatvara pristup odgovorom `503`.
 
+## CORS za preglednike
+
+CORS je zadano isključen. Uključite ga samo uz izričit popis dopuštenih izvora
+u host datoteci `config/api.php`:
+
+```php
+'cors' => [
+    'enabled' => true,
+    'allowed_origins' => ['https://client.example'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    'allowed_headers' => ['Accept', 'Authorization', 'Content-Type', 'Idempotency-Key', 'If-Match'],
+    'allow_credentials' => false,
+    'max_age' => 600,
+],
+```
+
+Svaka osnovna i opcionalna ruta ispod `/api/v1` dobiva isti middleware i
+neautentificiranu `OPTIONS` preflight rutu. Preflight i dalje provjerava traženu
+metodu i zaglavlja prema ovoj konfiguraciji. Nepoznat izvor ili nedopušten
+preflight sigurno se odbija problem odgovorom prije Bearer autentikacije i
+domenskog kontrolera.
+
 ## Webhook isporuka
 
 Webhook cilj zadano mora koristiti HTTPS. Ugrađeni korisnički podaci,

@@ -34,6 +34,28 @@ JSON writes accept `application/json` and are size-limited before decoding.
 Failures use RFC 9457 problem JSON and a request ID. If the security persistence
 schema is unavailable, write protection fails closed with `503`.
 
+## Browser CORS
+
+CORS is disabled by default. Enable it only with an explicit origin allowlist
+in the host's `config/api.php`:
+
+```php
+'cors' => [
+    'enabled' => true,
+    'allowed_origins' => ['https://client.example'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    'allowed_headers' => ['Accept', 'Authorization', 'Content-Type', 'Idempotency-Key', 'If-Match'],
+    'allow_credentials' => false,
+    'max_age' => 600,
+],
+```
+
+Every core and optional `/api/v1` route receives the same middleware and an
+unauthenticated `OPTIONS` preflight route. The preflight still validates the
+requested method and headers against this configuration. An unknown origin or
+disallowed preflight fails closed with a problem response and never reaches
+Bearer authentication or a domain controller.
+
 ## Webhook delivery
 
 Webhook targets require HTTPS by default. Embedded credentials, unresolved

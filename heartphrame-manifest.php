@@ -5,6 +5,7 @@ declare(strict_types=1);
 use AaiEduHr\HeartPhrameModuleApi\Account\ApiKeyAccountSectionProvider;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiKeyController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiKeyRequestController;
+use AaiEduHr\HeartPhrameModuleApi\Controller\ApiPreflightController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiRootController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\AuditResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\AuthResourceController;
@@ -12,6 +13,7 @@ use AaiEduHr\HeartPhrameModuleApi\Controller\MeController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\OpenApiController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\WebhookResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiAuthenticationMiddleware;
+use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiCorsMiddleware;
 use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiCorsRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiMenuIntegration;
@@ -114,7 +116,7 @@ return new class extends \HeartPhrame\Module\AbstractModuleManifest {
         $admin = [RequireAdminOrBootstrapMiddleware::class];
         $authenticated = [RequireAuthenticatedUserMiddleware::class];
 
-        return [
+        $routes = [
             ['GET', '/api/v1', ApiRootController::class . '@index', 'api.v1', $api],
             ['GET', '/api/v1/me', MeController::class . '@show', 'api.v1.me', $api],
             [
@@ -306,6 +308,37 @@ return new class extends \HeartPhrame\Module\AbstractModuleManifest {
                 $authenticated,
             ],
         ];
+
+        // HR: Framework dodaje bazne rute tek nakon bootstrap callbackova. Zato
+        //     bazne API rute ovdje izravno dobivaju CORS i OPTIONS, dok registrar
+        //     tijekom bootstrapa i dalje obrađuje ranije dodane opcionalne rute.
+        // EN: The framework adds base routes only after bootstrap callbacks. Base
+        //     API routes therefore receive CORS and OPTIONS here, while the
+        //     bootstrap registrar still handles earlier optional routes.
+        $preflightPaths = [];
+        foreach ($routes as &$route) {
+            $path = $route[1];
+            if (!str_starts_with($path, '/api/v1')) {
+                continue;
+            }
+
+            array_unshift($route[4], ApiCorsMiddleware::class);
+            $preflightPaths[$path] = true;
+        }
+
+        unset($route);
+
+        foreach (array_keys($preflightPaths) as $path) {
+            $routes[] = [
+                'OPTIONS',
+                $path,
+                ApiPreflightController::class . '@handle',
+                null,
+                [ApiCorsMiddleware::class],
+            ];
+        }
+
+        return $routes;
     }
 
     /**
