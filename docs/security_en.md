@@ -15,6 +15,9 @@ Exhaustion returns `429` with `Retry-After`.
 The counter uses a portable ORM transaction. Concurrent first requests in a
 new time window retry a conflicting insert briefly; repeated persistence
 failure is logged and fails closed instead of silently bypassing the limit.
+Expired counter rows are cleaned when a new minute window is created, not on
+every request in an already active window. This preserves the same limits while
+avoiding a maintenance `DELETE` on hot API paths.
 
 ## Idempotent writes
 

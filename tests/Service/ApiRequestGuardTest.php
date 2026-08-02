@@ -6,9 +6,9 @@ namespace AaiEduHr\HeartPhrameModuleApi\Tests\Service;
 
 use AaiEduHr\HeartPhrameModuleApi\Http\ApiResponseFactory;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiRequestGuard;
+use AaiEduHr\HeartPhrameModuleApi\Tests\Support\ApiCountingDatabase;
 use AaiEduHr\HeartPhrameModuleApi\Tests\Support\FixedResponseHandler;
 use AaiEduHr\HeartPhrameModuleAuth\Api\AuthApiIdentity;
-use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Migration\ReversibleMigrationInterface;
 use HeartPhrame\Config\Config;
 use HeartPhrame\Helper\Helper;
@@ -24,7 +24,7 @@ use Psr\Http\Message\ServerRequestInterface;
 #[CoversClass(ApiResponseFactory::class)]
 final class ApiRequestGuardTest extends TestCase
 {
-    private Database $database;
+    private ApiCountingDatabase $database;
 
     private ResponseFactory $responseFactory;
 
@@ -52,7 +52,7 @@ final class ApiRequestGuardTest extends TestCase
                 'idempotency_ttl_seconds' => 3_600,
             ],
         ]);
-        $this->database = new Database($config, $helper);
+        $this->database = new ApiCountingDatabase($config, $helper);
         $migration = require dirname(__DIR__, 2) . '/resources/migrations/initial_api_schema.php';
         $this->assertInstanceOf(ReversibleMigrationInterface::class, $migration);
         $migration->up($this->database);
@@ -136,6 +136,31 @@ final class ApiRequestGuardTest extends TestCase
         $this->assertSame('0', $second->getHeaderLine('X-RateLimit-Remaining'));
         $this->assertSame(429, $third->getStatusCode());
         $this->assertNotSame('', $third->getHeaderLine('Retry-After'));
+    }
+
+    /**
+     * HR: Dokazuje da se istekli prozori čiste samo pri stvaranju novog
+     *     minutnog prozora, a ne pri svakom zahtjevu u postojećem prozoru.
+     *
+     * EN: Proves that expired windows are cleaned only while creating a new
+     *     minute window, not on every request in an existing window.
+     */
+    public function testCleansExpiredRateWindowsOnlyWhenCreatingCurrentWindow(): void
+    {
+        $guard = $this->guard(['rate_limit_per_minute' => 10]);
+        $identity = $this->identity();
+        $handler = new FixedResponseHandler($this->responseFactory->json(['ok' => true]));
+        $request = new Request('GET', 'https://example.test/api/v1');
+
+        $this->database->resetQueries();
+        $guard->handle($request, $identity, $handler);
+        $guard->handle($request, $identity, $handler);
+        $guard->handle($request, $identity, $handler);
+
+        $this->assertSame(
+            1,
+            $this->database->countStartingWith('DELETE FROM "api_rate_limits"'),
+        );
     }
 
     /**

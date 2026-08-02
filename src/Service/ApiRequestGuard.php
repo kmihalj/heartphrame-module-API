@@ -247,11 +247,6 @@ final readonly class ApiRequestGuard
         $expiresAt = date('Y-m-d H:i:s', $windowEpoch + 120);
         $limit = $this->rateLimit();
 
-        $this->database
-            ->table(ModuleApi::TABLE_RATE_LIMITS)
-            ->where('expires_at', '<', date('Y-m-d H:i:s', $now))
-            ->delete();
-
         $count = null;
         $lastFailure = null;
         for ($attempt = 1; $attempt <= self::RATE_LIMIT_TRANSACTION_ATTEMPTS; ++$attempt) {
@@ -325,6 +320,15 @@ final readonly class ApiRequestGuard
 
                     return $count;
                 }
+
+                // HR: Čišćenje je održavanje pa ga izvodimo samo pri stvaranju
+                //     novog minutnog prozora, a ne pri svakom API zahtjevu.
+                // EN: Cleanup is maintenance, so run it only while creating a
+                //     new minute window instead of on every API request.
+                $database
+                    ->table(ModuleApi::TABLE_RATE_LIMITS)
+                    ->where('expires_at', '<', $now)
+                    ->delete();
 
                 $database->table(ModuleApi::TABLE_RATE_LIMITS)->insert([
                     'api_key_id' => $identity->keyId,

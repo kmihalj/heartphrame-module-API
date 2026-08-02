@@ -15,6 +15,9 @@ limit vraća `429` sa zaglavljem `Retry-After`.
 Brojač koristi prijenosnu ORM transakciju. Istodobni prvi zahtjevi u novom
 vremenskom prozoru kratko ponavljaju konfliktni upis; ponovljeni kvar pohrane
 zapisuje se u log i zatvara pristup umjesto tihog zaobilaženja ograničenja.
+Istekli retci brojača čiste se pri stvaranju novog minutnog prozora, a ne pri
+svakom zahtjevu u već aktivnom prozoru. Time ograničenja ostaju jednaka, bez
+održavateljskog `DELETE` upita na prometnim API putanjama.
 
 ## Idempotentni write zahtjevi
 
