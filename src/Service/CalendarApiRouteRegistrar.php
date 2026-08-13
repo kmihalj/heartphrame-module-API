@@ -77,6 +77,7 @@ final readonly class CalendarApiRouteRegistrar
         return [
             ['GET', '/api/v1/calendars', 'listCalendars', 'api.v1.calendars.list'],
             ['POST', '/api/v1/calendars', 'createCalendar', 'api.v1.calendars.create'],
+            ['POST', '/api/v1/calendars/import', 'importCalendar', 'api.v1.calendars.import'],
             ['GET', '/api/v1/calendars/{calendarUuid}', 'getCalendar', 'api.v1.calendars.get'],
             ['PATCH', '/api/v1/calendars/{calendarUuid}', 'updateCalendar', 'api.v1.calendars.update'],
             ['DELETE', '/api/v1/calendars/{calendarUuid}', 'deleteCalendar', 'api.v1.calendars.delete'],

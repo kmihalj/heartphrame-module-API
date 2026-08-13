@@ -74,16 +74,23 @@ paginirani tok sigurnosnih i upravljačkih događaja. Vidi
 
 ## Workspace scopeovi i rute
 
-Kada je Workspace instaliran i uključen, API registrira 17 dodatnih ruta.
-`workspace:read` izlistava vidljiva područja, čita jedno područje i njegovo
-ACL-filtrirano stablo za odabrani jezik. `workspace:manage` obuhvaća izmjenu
-podataka, soft brisanje i vraćanje, ACL područja, link-čvorove, redoslijed
-stabla i izravna ograničenja čvora.
+Kada je Workspace instaliran i uključen, API registrira 30 dodatnih ruta.
+Osim CRUD-a, stabla, ACL-a, sažetaka i HTML izvoza, ugovor pokriva
+administratorsku politiku naslovnice, osobni odabir vlasnika ključa te
+područjem ograničene teme. Uvoz teme i njezinih datoteka prihvaća standardni
+`multipart/form-data`; izvoz privatne teme dopušten je samo administratoru.
+`workspace:read` izlistava vidljiva područja, čita jedno područje, njegovo
+ACL-filtrirano stablo za odabrani jezik i objavljene sažetke.
+`workspace:manage` obuhvaća izmjenu podataka, soft brisanje i vraćanje, ACL
+područja, link-čvorove, redoslijed stabla, izravna ograničenja čvora i
+prenosivi HTML izvoz.
 
 Scope je nužan, ali nije dovoljan. Vlasnik API ključa mora imati ista efektivna
 prava koja bi trebao u web sučelju. Član samo za čitanje zato dobiva `403` kada
 koristi ključ koji sadrži `workspace:manage`. Kreiranje dokumenata i radnje s
 privicima ostavljeni su HTML Editor API-ju.
+DTO područja i stranice dodatno izlažu `tree_visibility` i
+`contents_visibility`, a Editor create/update prihvaća nadjačavanje za stranicu.
 
 Potpuni popis ruta i domensko ponašanje dokumentirani su u Workspace modulu
 pod naslovom **API integracija**.
@@ -105,9 +112,19 @@ obavijest.
 
 ## Calendar scopeovi i rute
 
-Kada je Calendar uključen, API dodaje 12 ruta za kalendare, događaje, ACL i ICS
+Kada je Calendar uključen, API dodaje 13 ruta za kalendare, događaje, ACL i ICS
 sa scopeovima `calendar:read` i `calendar:write`. Calendar ACL uvijek se ponovno
 provjerava. Vidi [HTTP API Calendara](calendar_hr.md).
+
+## Scope i ruta Workspace Searcha
+
+Kada je Workspace Search instaliran i uključen, API dodaje
+`GET /api/v1/workspace-search` sa scopeom `workspace-search:read`. Endpoint
+pretražuje naslove, objavljeni tekst i autore te podržava filtre područja,
+autora, datuma, localea i straničenja. Broj rezultata, isječci i rezultati
+računaju se tek nakon primjene Workspace ACL-a i naslijeđenog page ACL-a
+vlasnika API ključa. Vidi
+[referencu Workspace Searcha](workspace_search_hr.md).
 
 ## Task scopeovi i rute
 
@@ -147,3 +164,8 @@ Domenski modul dodaje `config/api.php` s resursima, dvojezičnim nazivima i
 scopeovima. Datoteka ne smije importati klase API modula. API modul može
 registrirati opcionalni kontroler koji poziva javni domenski servis, a nikada
 privatne tablice domenskog modula.
+
+## Backup i povrat
+
+Opcionalni provider, namjerna izostavljanja i provjere nakon povrata opisani su
+u [integraciji backupa](backup_hr.md).

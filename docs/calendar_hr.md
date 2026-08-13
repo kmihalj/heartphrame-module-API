@@ -15,6 +15,7 @@ Bearer ključ s navedenim scopeom, a vlasnik ključa mora proći i Calendar ACL.
 ```text
 GET    /api/v1/calendars
 POST   /api/v1/calendars
+POST   /api/v1/calendars/import
 GET    /api/v1/calendars/{calendarUuid}
 PATCH  /api/v1/calendars/{calendarUuid}
 DELETE /api/v1/calendars/{calendarUuid}
@@ -56,6 +57,21 @@ korisničkim/grupnim subjektima i read/write zastavicama. ICS vraća
 
 Calendar ugradnja Editora sprema UUID-eve i parametre prikaza. Ovim rutama
 uređuju se živi kalendarski podaci koji se renderiraju u stranici.
+
+Ruta uvoza prihvaća isti payload kao web uvoz Calendara i ponovno provjerava
+pravo pisanja vlasnika API ključa. Minimalni primjer:
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --request POST \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Content-Type: application/json' \
+  --data '{"name":"Uvezeni raspored","ics":"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nEND:VCALENDAR\\r\\n"}' \
+  "$HPH_API_URL/calendars/import"
+```
+
+Polje `ics` je obavezno. Opcije naziva/UUID-a i brojači uvoza slijede domenski
+ugovor uvoza, a neispravni iCalendar vraća zajednički validacijski problem.
 
 `DELETE /api/v1/calendars/{calendarUuid}` trajno briše kalendar, događaje,
 pretplate i ACL; nema soft-delete ni restore rute. Postojeći Editor blok ostaje

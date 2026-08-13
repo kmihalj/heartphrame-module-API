@@ -43,7 +43,11 @@ final class CalendarApiRouteRegistrarTest extends TestCase
         $registrar->register();
 
         $namedRoutes = $routes->getNamedRoutes();
-        $this->assertCount(12, $namedRoutes);
+        $this->assertCount(13, $namedRoutes);
+        $this->assertSame(
+            '/api/v1/calendars/import',
+            $namedRoutes['api.v1.calendars.import']['path'] ?? null,
+        );
         $this->assertSame(
             '/api/v1/calendars/{calendarUuid}/export.ics',
             $namedRoutes['api.v1.calendars.export']['path'] ?? null,

@@ -40,6 +40,12 @@ Izmjena Workspace nacrta mora poslati zadnji `draft_revision`; zastarjela
 izmjena vraća `409 Conflict`. Obični endpoint stranice uvijek vraća objavljeni
 sadržaj.
 
+Kreiranje prihvaća `contents_visibility` s vrijednošću `inherit` (zadano),
+`shown` ili `hidden`. Izmjena može promijeniti isto polje. Ono određuje početno
+stanje kartice sadržaja stranice i nadjačava zadanu vrijednost područja. DTO
+stranice, nacrta i verzije vraća spremljenu politiku za dokumente u Workspaceu;
+samostalni dokumenti vraćaju `null`.
+
 U samostalnom načinu uspješna izmjena odmah objavljuje verziju, a endpointi
 nacrta ili objave vraćaju konflikt. U Workspace načinu kreiranje i uređivanje
 mijenjaju jedan zajednički nacrt dok ga ovlašteni objavljivač ne objavi.

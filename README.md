@@ -24,6 +24,7 @@ Optional domain integrations:
 - Notification: the API-key owner's inbox and read state.
 - Task: published task state and audit.
 - Workspace: ACL-aware resources and tree management.
+- Workspace Search: ACL-aware title, content, author, locale, and date search.
 
 Theme and Menu are presentation-only optional integrations. Detailed examples
 are in `docs/dependencies_en.md` and the domain guides under `docs/`.
@@ -101,6 +102,10 @@ routes for calendar/event CRUD, ACL, and ICS. The optional Task integration adds
 `task:read` and `task:write` routes for published task state and audit. Editor
 structured content can combine any number of Calendar and Task embeds.
 
+Workspace Search adds `workspace-search:read` and
+`GET /api/v1/workspace-search`. The API-key owner's inherited Workspace/page
+ACL is applied before totals, snippets, or results are produced.
+
 The optional Notification integration exposes only the API-key owner's inbox.
 It never allows creating arbitrary messages. A Workspace draft submitted
 through the API uses the same domain workflow as the web interface and
@@ -146,3 +151,4 @@ field or a fixed-version substitute.
 
 See [English documentation](docs/index_en.md) and
 [Croatian documentation](docs/index_hr.md).
+Backup-provider behavior is documented in [Backup integration](docs/backup_en.md).

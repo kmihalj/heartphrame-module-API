@@ -43,7 +43,23 @@ final class WorkspaceApiRouteRegistrarTest extends TestCase
         $registrar->register();
 
         $namedRoutes = $routes->getNamedRoutes();
-        $this->assertCount(17, $namedRoutes);
+        $this->assertCount(30, $namedRoutes);
+        $this->assertSame(
+            '/api/v1/workspaces/homepage/preference',
+            $namedRoutes['api.v1.workspaces.homepage.preference.save']['path'] ?? null,
+        );
+        $this->assertSame(
+            '/api/v1/workspaces/{workspaceSlug}/shorts',
+            $namedRoutes['api.v1.workspaces.shorts']['path'] ?? null,
+        );
+        $this->assertSame(
+            '/api/v1/workspaces/{workspaceSlug}/exports/html',
+            $namedRoutes['api.v1.workspaces.exports.html']['path'] ?? null,
+        );
+        $this->assertSame(
+            '/api/v1/workspaces/{workspaceSlug}/theme/assets/{file}',
+            $namedRoutes['api.v1.workspaces.theme.assets.delete']['path'] ?? null,
+        );
         $this->assertSame(
             '/api/v1/workspaces/{workspaceSlug}/nodes/{nodeId}/acl',
             $namedRoutes['api.v1.workspaces.nodes.acl.replace']['path'] ?? null,

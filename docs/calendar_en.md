@@ -16,6 +16,7 @@ ACL.
 ```text
 GET    /api/v1/calendars
 POST   /api/v1/calendars
+POST   /api/v1/calendars/import
 GET    /api/v1/calendars/{calendarUuid}
 PATCH  /api/v1/calendars/{calendarUuid}
 DELETE /api/v1/calendars/{calendarUuid}
@@ -58,6 +59,22 @@ envelope.
 
 An Editor calendar embed stores UUIDs and display parameters. Use these routes
 to manage the live calendar data rendered by that page.
+
+The import route accepts the same payload as the Calendar web import and
+rechecks the API-key owner's write rights. Minimal example:
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --request POST \
+  --header "Authorization: Bearer $HPH_API_TOKEN" \
+  --header 'Content-Type: application/json' \
+  --data '{"name":"Imported agenda","ics":"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nEND:VCALENDAR\\r\\n"}' \
+  "$HPH_API_URL/calendars/import"
+```
+
+The `ics` field is mandatory. Calendar name/UUID options and imported counters
+follow the domain import contract; invalid iCalendar input returns the common
+validation problem response.
 
 `DELETE /api/v1/calendars/{calendarUuid}` permanently removes the calendar,
 events, subscriptions, and ACL; there is no soft-delete or restore route. An

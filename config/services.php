@@ -16,6 +16,7 @@ use AaiEduHr\HeartPhrameModuleApi\Controller\NotificationResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\OpenApiController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\TaskResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\WorkspaceResourceController;
+use AaiEduHr\HeartPhrameModuleApi\Controller\WorkspaceSearchResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\WebhookResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Command\HpApiCommand;
 use AaiEduHr\HeartPhrameModuleApi\Http\ApiResponseFactory;
@@ -37,6 +38,7 @@ use AaiEduHr\HeartPhrameModuleApi\Service\NotificationApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\OpenApiDocumentService;
 use AaiEduHr\HeartPhrameModuleApi\Service\TaskApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceApiRouteRegistrar;
+use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceSearchApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\StreamWebhookTransport;
 use AaiEduHr\HeartPhrameModuleApi\Service\WebhookConfig;
 use AaiEduHr\HeartPhrameModuleApi\Service\WebhookOutboxWorker;
@@ -52,6 +54,7 @@ use AaiEduHr\HeartPhrameModuleEditorHtml\Api\EditorHtmlApiService;
 use AaiEduHr\HeartPhrameModuleNotification\Service\NotificationService;
 use AaiEduHr\HeartPhrameModuleTask\Api\TaskApiService;
 use AaiEduHr\HeartPhrameModuleWorkspace\Api\WorkspaceApiService;
+use AaiEduHr\HeartPhrameModuleWorkspaceSearch\Service\WorkspaceSearchService;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use HeartPhrame\Alert\AlertHandler;
 use HeartPhrame\Authn\AuthnHandlerInterface;
@@ -65,7 +68,7 @@ use HeartPhrame\Session\SessionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
-return [
+$services = [
     HpApiCommand::class => static fn(ContainerInterface $container): HpApiCommand =>
         new HpApiCommand(
             $container->get(ConfigInterface::class),
@@ -230,11 +233,20 @@ return [
     WorkspaceResourceController::class => static fn(ContainerInterface $container): WorkspaceResourceController =>
         new WorkspaceResourceController(
             $container->get(ApiResponseFactory::class),
+            $container->get(ResponseFactory::class),
             $container->get(WorkspaceApiService::class),
             $container->get(ConfigInterface::class),
             $container->get(ApiCursorPaginator::class),
             $container->get(ApiEntityTagService::class),
         ),
+
+    WorkspaceSearchResourceController::class =>
+        static fn(ContainerInterface $container): WorkspaceSearchResourceController =>
+            new WorkspaceSearchResourceController(
+                $container->get(ApiResponseFactory::class),
+                $container->get(WorkspaceSearchService::class),
+                $container->get(ConfigInterface::class),
+            ),
 
     EditorHtmlResourceController::class => static fn(ContainerInterface $container): EditorHtmlResourceController =>
         new EditorHtmlResourceController(
@@ -305,6 +317,14 @@ return [
                 $container->get(Routes::class),
             ),
 
+    WorkspaceSearchApiRouteRegistrar::class =>
+        static fn(ContainerInterface $container): WorkspaceSearchApiRouteRegistrar =>
+            new WorkspaceSearchApiRouteRegistrar(
+                $container->get(ComposerBridge::class),
+                $container->get(ConfigInterface::class),
+                $container->get(Routes::class),
+            ),
+
     NotificationApiRouteRegistrar::class =>
         static fn(ContainerInterface $container): NotificationApiRouteRegistrar =>
             new NotificationApiRouteRegistrar(
@@ -341,3 +361,34 @@ return [
                 $container->get(AlertHandler::class),
             ),
 ];
+
+if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\DatabaseTableBackupProvider::class)) {
+    $services['heartphrame.backup.provider.api'] =
+        static fn(ContainerInterface $container): \AaiEduHr\HeartPhrameModuleBackup\Service\DatabaseTableBackupProvider =>
+            new \AaiEduHr\HeartPhrameModuleBackup\Service\DatabaseTableBackupProvider(
+                $container->get(\AaiEduHr\HeartPhrameModuleOrm\Database\Database::class),
+                new \AaiEduHr\HeartPhrameModuleBackup\Value\BackupProviderMetadata(
+                    'api',
+                    \AaiEduHr\HeartPhrameModuleApi\ModuleApi::PACKAGE_NAME,
+                    2,
+                    ['hr' => 'API postavke i webhookovi', 'en' => 'API settings and webhooks'],
+                    ['auth'],
+                    [\AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope::SITE, \AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope::COMPONENT],
+                    true,
+                    true,
+                ),
+                [
+                    ['dataset' => 'key-requests', 'table' => \AaiEduHr\HeartPhrameModuleApi\ModuleApi::TABLE_KEY_REQUESTS, 'primary_key' => 'id', 'conflict_keys' => ['uuid'], 'preserve_primary_key' => false, 'foreign_keys' => [
+                        ['column' => 'user_id', 'namespace' => 'auth.user'],
+                        ['column' => 'decided_by_user_id', 'namespace' => 'auth.user', 'nullable' => true],
+                        ['column' => 'api_key_id', 'namespace' => 'auth.api-key', 'nullable' => true],
+                    ]],
+                    ['dataset' => 'webhook-subscriptions', 'table' => \AaiEduHr\HeartPhrameModuleApi\ModuleApi::TABLE_WEBHOOK_SUBSCRIPTIONS, 'primary_key' => 'id', 'conflict_keys' => ['uuid'], 'preserve_primary_key' => false, 'foreign_keys' => [
+                        ['column' => 'owner_api_key_id', 'namespace' => 'auth.api-key'],
+                        ['column' => 'owner_user_id', 'namespace' => 'auth.user'],
+                    ]],
+                ],
+            );
+}
+
+return $services;

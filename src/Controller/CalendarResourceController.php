@@ -74,6 +74,22 @@ final readonly class CalendarResourceController
     }
 
     /**
+     * HR: Uvozi iCalendar tekst u postojeći ili novi kalendar.
+     * EN: Imports iCalendar text into an existing or new calendar.
+     */
+    public function importCalendar(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->execute(
+            $request,
+            'calendar:write',
+            fn(array $user): array => $this->calendars->importCalendar(
+                $this->jsonBody($request),
+                $user,
+            ),
+        );
+    }
+
+    /**
      * HR: Dohvaća jedan kalendar po javnom UUID-u.
      * EN: Fetches one calendar by its public UUID.
      */

@@ -73,16 +73,22 @@ paginated security/management event stream. See the
 
 ## Workspace scopes and routes
 
-When Workspace is installed and enabled, API registers 17 additional routes.
+When Workspace is installed and enabled, API registers 30 additional routes.
+In addition to CRUD, tree, ACL, summaries, and HTML export, the contract covers
+administrator homepage policy, the key owner's personal selection, and
+Workspace-scoped themes. Theme and asset uploads use standard
+`multipart/form-data`; private-theme export remains administrator-only.
 `workspace:read` lists visible Workspaces, reads one Workspace, and reads its
-ACL-filtered, language-aware tree. `workspace:manage` covers metadata changes,
-soft deletion/restoration, Workspace ACL, link nodes, tree order, and direct
-node restrictions.
+ACL-filtered, language-aware tree and published summaries. `workspace:manage`
+covers metadata changes, soft deletion/restoration, Workspace ACL, link nodes,
+tree order, direct node restrictions, and portable HTML export.
 
 Scope is necessary but not sufficient. The API key owner must also have the
 same effective rights they would need in the web interface. A read-only member
 therefore receives `403` when using a key that contains `workspace:manage`.
 Document creation and attachment operations are deferred to the HTML Editor API.
+Workspace and page DTOs also expose `tree_visibility` and
+`contents_visibility`; Editor create/update accepts the page-level override.
 
 The complete route reference and domain behavior are documented by the
 Workspace module under **API integration**.
@@ -105,9 +111,18 @@ in-app notification.
 
 ## Calendar scopes and routes
 
-When Calendar is enabled, API adds 12 calendar, event, ACL, and ICS routes with
+When Calendar is enabled, API adds 13 calendar, event, ACL, and ICS routes with
 `calendar:read` and `calendar:write`. Calendar ACL is always rechecked. See the
 [Calendar HTTP API reference](calendar_en.md).
+
+## Workspace Search scope and route
+
+When Workspace Search is installed and enabled, API adds
+`GET /api/v1/workspace-search` with `workspace-search:read`. The endpoint
+searches titles, published text, and authors and supports Workspace, author,
+date, locale, and pagination filters. Counts, snippets, and results are all
+computed only after the API-key owner's Workspace and inherited page ACL have
+been applied. See the [Workspace Search reference](workspace_search_en.md).
 
 ## Task scopes and routes
 
@@ -147,3 +162,8 @@ A domain module adds `config/api.php` with resources, bilingual labels, and
 scopes. The descriptor must not import API-module classes. The API module may
 register an optional controller that calls a public domain service, never the
 domain module's private tables.
+
+## Backup and restore
+
+The optional provider, its intentional exclusions, and post-restore checks are
+documented in [Backup integration](backup_en.md).

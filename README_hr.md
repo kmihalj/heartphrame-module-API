@@ -24,6 +24,7 @@ Opcionalne domenske integracije:
 - Notification: inbox i stanje pročitanosti vlasnika API ključa.
 - Task: stanje objavljenih zadataka i audit.
 - Workspace: ACL resursi i upravljanje stablom.
+- Workspace Search: ACL pretraga naslova, sadržaja, autora, localea i datuma.
 
 Theme i Menu samo su opcionalne prezentacijske integracije. Detaljni primjeri
 nalaze se u `docs/dependencies_hr.md` i domenskim vodičima u `docs/`.
@@ -101,6 +102,10 @@ za CRUD kalendara/događaja, ACL i ICS. Opcionalna Task integracija dodaje
 Strukturirani Editor sadržaj može kombinirati bilo koji broj Calendar i Task
 ugradnji.
 
+Workspace Search dodaje `workspace-search:read` i
+`GET /api/v1/workspace-search`. Naslijeđeni Workspace/page ACL vlasnika API
+ključa primjenjuje se prije brojanja, stvaranja isječaka i rezultata.
+
 Opcionalna Notification integracija izlaže samo inbox vlasnika API ključa.
 Ne dopušta stvaranje proizvoljnih poruka. Workspace nacrt poslan na pregled
 preko API-ja prolazi isti domenski workflow kao web sučelje i zato obavještava
@@ -149,3 +154,4 @@ dohvaća najnovija razvojna stanja i pokreće cijeli skup provjera
 
 Detalji su u [hrvatskoj dokumentaciji](docs/index_hr.md) i
 [engleskoj dokumentaciji](docs/index_en.md).
+Ponašanje backup providera opisano je u [integraciji backupa](docs/backup_hr.md).

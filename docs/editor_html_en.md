@@ -39,6 +39,12 @@ creation requires `workspace_slug` and may include `parent_id`. A Workspace
 draft update must send the latest `draft_revision`; stale edits return
 `409 Conflict`. The normal page endpoint always returns published content.
 
+Create accepts `contents_visibility` with `inherit` (default), `shown`, or
+`hidden`. Update may change the same field. It controls the page's initial
+contents-card state and overrides the Workspace default. Page, draft, and
+version DTOs return the stored policy for Workspace-owned documents;
+standalone documents return `null`.
+
 In standalone mode successful writes publish immediately and draft or publish
 routes return a conflict. In Workspace mode creation and editing update one
 shared draft until an authorized publisher calls the publish route.

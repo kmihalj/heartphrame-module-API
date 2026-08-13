@@ -16,7 +16,7 @@ use Throwable;
  */
 final readonly class ApiMenuIntegration
 {
-    private const MENU_REPOSITORY = 'AaiEduHr\\HeartPhrameModuleMenu\\Service\\MenuConfigRepository';
+    private const MENU_REPOSITORY = \AaiEduHr\HeartPhrameModuleMenu\Service\MenuConfigRepository::class;
 
     /**
      * HR: Prima container bez tvrde ovisnosti o opcionalnom Menu modulu.

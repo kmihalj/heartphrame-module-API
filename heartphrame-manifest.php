@@ -22,6 +22,7 @@ use AaiEduHr\HeartPhrameModuleApi\Service\EditorHtmlApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\NotificationApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\TaskApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceApiRouteRegistrar;
+use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceSearchApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleAuth\Account\AuthAccountSectionRegistry;
 use AaiEduHr\HeartPhrameModuleAuth\Middleware\RequireAdminOrBootstrapMiddleware;
 use AaiEduHr\HeartPhrameModuleAuth\Middleware\RequireAuthenticatedUserMiddleware;
@@ -378,6 +379,12 @@ return new class extends \HeartPhrame\Module\AbstractModuleManifest {
             static function (ContainerInterface $container): void {
                 $registrar = $container->get(WorkspaceApiRouteRegistrar::class);
                 if ($registrar instanceof WorkspaceApiRouteRegistrar) {
+                    $registrar->register();
+                }
+            },
+            static function (ContainerInterface $container): void {
+                $registrar = $container->get(WorkspaceSearchApiRouteRegistrar::class);
+                if ($registrar instanceof WorkspaceSearchApiRouteRegistrar) {
                     $registrar->register();
                 }
             },
