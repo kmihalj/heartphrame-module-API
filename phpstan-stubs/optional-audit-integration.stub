@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AaiEduHr\HeartPhrameModuleAudit\Service;
+
+/**
+ * HR: Statički ugovor opcionalnog Audit modula; datoteka se ne učitava pri radu aplikacije.
+ * EN: Static contract for the optional Audit module; this file is never loaded at runtime.
+ */
+final readonly class AuditQueryService
+{
+    /**
+     * @param array<string,mixed> $filters
+     * @return array{items:list<array<string,mixed>>,total:int,page:int,pages:int,page_size:int}
+     */
+    public function search(array $filters, int $page = 1, int $pageSize = 50): array
+    {
+    }
+}

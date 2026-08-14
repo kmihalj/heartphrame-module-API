@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace AaiEduHr\HeartPhrameModuleApi\Service;
 
+use AaiEduHr\HeartPhrameModuleApi\Event\WebhookDeliveryChanged;
 use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 use function date;
@@ -40,6 +43,8 @@ final readonly class WebhookOutboxWorker
         private WebhookTargetPolicy $targetPolicy,
         private WebhookTransportInterface $transport,
         private WebhookConfig $config,
+        private ?LoggerInterface $logger = null,
+        private ?EventDispatcherInterface $events = null,
     ) {
     }
 
@@ -137,6 +142,7 @@ final readonly class WebhookOutboxWorker
         );
         if ($subscription === null || $this->intValue($subscription['is_active'] ?? 0) !== 1) {
             $this->markFailed($delivery, null, '', __('Webhook pretplata nije aktivna.'));
+            $this->dispatch($delivery, 'failed');
 
             return 'failed';
         }
@@ -163,6 +169,7 @@ final readonly class WebhookOutboxWorker
 
             if ($result->succeeded()) {
                 $this->markDelivered($delivery, $result);
+                $this->dispatch($delivery, 'delivered', $result->status);
 
                 return 'delivered';
             }
@@ -173,6 +180,7 @@ final readonly class WebhookOutboxWorker
 
             if ($this->shouldRetry($delivery, $result)) {
                 $this->markRetry($delivery, $result);
+                $this->dispatch($delivery, 'retry_scheduled', $result->status);
 
                 return 'retried';
             }
@@ -183,6 +191,7 @@ final readonly class WebhookOutboxWorker
                 $result->body,
                 $result->error ?? $this->httpFailure($result->status),
             );
+            $this->dispatch($delivery, 'failed', $result->status);
 
             return 'failed';
         } catch (Throwable $throwable) {
@@ -192,12 +201,56 @@ final readonly class WebhookOutboxWorker
                     new WebhookDeliveryResult(null, '', $throwable->getMessage()),
                 );
 
+                $this->logger?->warning('Webhook delivery failed and was queued for retry.', [
+                    'module' => 'api',
+                    'event_uuid' => $this->stringValue($delivery['event_uuid'] ?? ''),
+                    'attempt' => $this->intValue($delivery['attempts'] ?? 0),
+                    'exception' => $throwable,
+                ]);
+                $this->dispatch($delivery, 'retry_scheduled');
+
                 return 'retried';
             }
 
             $this->markFailed($delivery, null, '', $throwable->getMessage());
+            $this->logger?->error('Webhook delivery permanently failed.', [
+                'module' => 'api',
+                'event_uuid' => $this->stringValue($delivery['event_uuid'] ?? ''),
+                'attempt' => $this->intValue($delivery['attempts'] ?? 0),
+                'exception' => $throwable,
+            ]);
+            $this->dispatch($delivery, 'failed');
 
             return 'failed';
+        }
+    }
+
+    /**
+     * HR: Sigurno šalje neutralni rezultat webhook isporuke audit listenerima.
+     * EN: Safely dispatches a neutral webhook delivery outcome to audit listeners.
+     *
+     * @param array<string,mixed> $delivery
+     */
+    private function dispatch(array $delivery, string $outcome, ?int $status = null): void
+    {
+        if (!$this->events instanceof EventDispatcherInterface) {
+            return;
+        }
+
+        try {
+            $this->events->dispatch(new WebhookDeliveryChanged(
+                $this->stringValue($delivery['uuid'] ?? ''),
+                $this->stringValue($delivery['event_uuid'] ?? ''),
+                $this->stringValue($delivery['event_name'] ?? ''),
+                $outcome,
+                $this->intValue($delivery['attempts'] ?? 0),
+                $status,
+            ));
+        } catch (Throwable $throwable) {
+            $this->logger?->error('Webhook business-event listener failed.', [
+                'module' => 'api', 'event_uuid' => $this->stringValue($delivery['event_uuid'] ?? ''),
+                'outcome' => $outcome, 'exception' => $throwable,
+            ]);
         }
     }
 

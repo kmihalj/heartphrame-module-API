@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace AaiEduHr\HeartPhrameModuleApi\Middleware;
 
+use AaiEduHr\HeartPhrameModuleApi\Event\ApiRequestAuthenticated;
 use AaiEduHr\HeartPhrameModuleApi\Http\ApiResponseFactory;
 use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
+use AaiEduHr\HeartPhrameModuleApi\Service\ApiRequestActorContext;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiRequestGuard;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiWebhookPublisher;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthApiKeyService;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * HR: Autenticira stateless API zahtjeve Bearer ključem prije poziva kontrolera.
@@ -31,6 +36,9 @@ final readonly class ApiAuthenticationMiddleware implements MiddlewareInterface
         private ApiResponseFactory $responses,
         private ?ApiRequestGuard $requestGuard = null,
         private ?ApiWebhookPublisher $webhookPublisher = null,
+        private ?EventDispatcherInterface $events = null,
+        private ?LoggerInterface $logger = null,
+        private ?ApiRequestActorContext $actorContext = null,
     ) {
     }
 
@@ -41,6 +49,10 @@ final readonly class ApiAuthenticationMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        // HR: Novi zahtjev nikada ne smije naslijediti izvršitelja prethodnoga.
+        // EN: A new request must never inherit the previous request's actor.
+        $this->actorContext?->clear();
+
         $authorization = trim($request->getHeaderLine('Authorization'));
         if (preg_match('/^Bearer\s+(.+)$/iD', $authorization, $matches) !== 1) {
             return $this->unauthorized($request);
@@ -59,6 +71,12 @@ final readonly class ApiAuthenticationMiddleware implements MiddlewareInterface
             ->withAttribute(ModuleApi::REQUEST_ID_ATTRIBUTE, $requestId)
             ->withAttribute(ModuleApi::IDENTITY_ATTRIBUTE, $identity);
 
+        $user = $identity->user;
+        $label = $user['display_name'] ?? $user['login_identifier'] ?? null;
+        $actorLabel = is_scalar($label) && trim((string)$label) !== '' ? trim((string)$label) : null;
+        $this->actorContext?->useApiActor($identity->userId(), $actorLabel, $requestId);
+        $this->publishAuthenticatedActor($identity, $requestId);
+
         $response = $this->requestGuard instanceof ApiRequestGuard
             ? $this->requestGuard->handle($request, $identity, $handler)
             : $handler->handle($request);
@@ -68,6 +86,38 @@ final readonly class ApiAuthenticationMiddleware implements MiddlewareInterface
         }
 
         return $response;
+    }
+
+    /**
+     * HR: Objavljuje sigurni identitet drugim opcionalnim modulima. Neuspjeh
+     *     audit integracije nikada ne prekida valjani API zahtjev.
+     * EN: Publishes the safe identity to optional modules. An audit integration
+     *     failure never interrupts an otherwise valid API request.
+     */
+    private function publishAuthenticatedActor(
+        \AaiEduHr\HeartPhrameModuleAuth\Api\AuthApiIdentity $identity,
+        string $requestId,
+    ): void {
+        if (!$this->events instanceof EventDispatcherInterface) {
+            return;
+        }
+
+        $user = $identity->user;
+        $label = $user['display_name'] ?? $user['login_identifier'] ?? null;
+
+        try {
+            $this->events->dispatch(new ApiRequestAuthenticated(
+                $identity->userId(),
+                is_scalar($label) && trim((string)$label) !== '' ? trim((string)$label) : null,
+                $requestId,
+            ));
+        } catch (Throwable $throwable) {
+            $this->logger?->error('Unable to publish authenticated API actor context.', [
+                'module' => 'api',
+                'request_id' => $requestId,
+                'exception' => $throwable,
+            ]);
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
 use AaiEduHr\HeartPhrameModuleAuth\Api\AuthApiIdentity;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 use function array_values;
@@ -32,8 +33,10 @@ final readonly class ApiWebhookPublisher
      * HR: Prima servis trajnih pretplata.
      * EN: Receives the durable subscription service.
      */
-    public function __construct(private WebhookSubscriptionService $subscriptions)
-    {
+    public function __construct(
+        private WebhookSubscriptionService $subscriptions,
+        private ?LoggerInterface $logger = null,
+    ) {
     }
 
     /**
@@ -75,9 +78,15 @@ final readonly class ApiWebhookPublisher
                 ],
             ];
             $this->subscriptions->publish($eventName, $payload);
-        } catch (Throwable) {
+        } catch (Throwable $throwable) {
             // HR: Webhook kvar ne smije promijeniti odgovor uspješne poslovne radnje.
             // EN: A webhook failure must never alter a successful business response.
+            $this->logger?->error('API webhook publication failed.', [
+                'module' => 'api',
+                'http_method' => strtoupper($request->getMethod()),
+                'path' => $request->getUri()->getPath(),
+                'exception' => $throwable,
+            ]);
         }
     }
 

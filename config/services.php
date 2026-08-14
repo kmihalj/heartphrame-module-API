@@ -30,6 +30,7 @@ use AaiEduHr\HeartPhrameModuleApi\Service\ApiKeyRequestNotifier;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiKeyRequestService;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiModuleViewRenderer;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiRequestGuard;
+use AaiEduHr\HeartPhrameModuleApi\Service\ApiRequestActorContext;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiScopeRegistry;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiWebhookPublisher;
 use AaiEduHr\HeartPhrameModuleApi\Service\CalendarApiRouteRegistrar;
@@ -101,6 +102,8 @@ $services = [
             $container->get(LoggerInterface::class),
         ),
 
+    ApiRequestActorContext::class => static fn(): ApiRequestActorContext => new ApiRequestActorContext(),
+
     ApiAuthenticationMiddleware::class => static fn(
         ContainerInterface $container,
     ): ApiAuthenticationMiddleware => new ApiAuthenticationMiddleware(
@@ -108,6 +111,9 @@ $services = [
         $container->get(ApiResponseFactory::class),
         $container->get(ApiRequestGuard::class),
         $container->get(ApiWebhookPublisher::class),
+        $container->get(\Psr\EventDispatcher\EventDispatcherInterface::class),
+        $container->get(LoggerInterface::class),
+        $container->get(ApiRequestActorContext::class),
     ),
 
     WebhookConfig::class => static fn(ContainerInterface $container): WebhookConfig =>
@@ -135,10 +141,15 @@ $services = [
             $container->get(WebhookTargetPolicy::class),
             $container->get(WebhookTransportInterface::class),
             $container->get(WebhookConfig::class),
+            $container->get(LoggerInterface::class),
+            $container->get(\Psr\EventDispatcher\EventDispatcherInterface::class),
         ),
 
     ApiWebhookPublisher::class => static fn(ContainerInterface $container): ApiWebhookPublisher =>
-        new ApiWebhookPublisher($container->get(WebhookSubscriptionService::class)),
+        new ApiWebhookPublisher(
+            $container->get(WebhookSubscriptionService::class),
+            $container->get(LoggerInterface::class),
+        ),
 
     ApiCorsMiddleware::class => static fn(ContainerInterface $container): ApiCorsMiddleware =>
         new ApiCorsMiddleware(
@@ -209,8 +220,11 @@ $services = [
     AuditResourceController::class => static fn(ContainerInterface $container): AuditResourceController =>
         new AuditResourceController(
             $container->get(ApiResponseFactory::class),
-            $container->get(AuthAuditLogService::class),
+            $container->has('AaiEduHr\\HeartPhrameModuleAudit\\Service\\AuditQueryService')
+                ? $container->get('AaiEduHr\\HeartPhrameModuleAudit\\Service\\AuditQueryService')
+                : $container->get(AuthAuditLogService::class),
             $container->get(ApiCursorPaginator::class),
+            $container->get(LoggerInterface::class),
         ),
 
     AuthResourceController::class => static fn(ContainerInterface $container): AuthResourceController =>
@@ -376,6 +390,7 @@ if (class_exists(\AaiEduHr\HeartPhrameModuleBackup\Service\DatabaseTableBackupPr
                     [\AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope::SITE, \AaiEduHr\HeartPhrameModuleBackup\Value\BackupScope::COMPONENT],
                     true,
                     true,
+                    componentGroups: [\AaiEduHr\HeartPhrameModuleBackup\Value\BackupComponentGroup::SETTINGS],
                 ),
                 [
                     ['dataset' => 'key-requests', 'table' => \AaiEduHr\HeartPhrameModuleApi\ModuleApi::TABLE_KEY_REQUESTS, 'primary_key' => 'id', 'conflict_keys' => ['uuid'], 'preserve_primary_key' => false, 'foreign_keys' => [

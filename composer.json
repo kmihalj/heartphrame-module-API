@@ -67,6 +67,7 @@
         "slevomat/coding-standard": "^8"
     },
     "suggest": {
+        "aaieduhr/heartphrame-module-audit": "Exposes the central activity audit through the existing audit:read endpoint when installed.",
         "aaieduhr/heartphrame-module-backup": "Adds encrypted backup and restore for API key requests and webhook subscriptions; transient delivery state is excluded.",
         "aaieduhr/heartphrame-module-calendar": "Exposes ACL-aware calendar, event, and ICS endpoints.",
         "aaieduhr/heartphrame-module-editor-html": "Exposes ACL-aware pages, versions, translations, and attachment endpoints.",

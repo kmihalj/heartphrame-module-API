@@ -5,3 +5,5 @@ parameters:
         - heartphrame-manifest.php
     tmpDir: build/phpstan
     treatPhpDocTypesAsCertain: false
+    scanFiles:
+        - phpstan-stubs/optional-audit-integration.stub
