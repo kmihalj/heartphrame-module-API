@@ -39,6 +39,7 @@
     "suggest": {
         "aaieduhr/heartphrame-module-backup": "Adds encrypted backup and restore for API key requests and webhook subscriptions; transient delivery state is excluded.",
         "aaieduhr/heartphrame-module-menu": "Adds API-key administration to configurable settings navigation.",
+        "aaieduhr/heartphrame-module-notification": "Notifies administrators and requesters during the optional API-key approval workflow.",
         "aaieduhr/heartphrame-module-theme": "Applies configured light and dark visual tokens to API-key administration screens."
     },
     "autoload": {

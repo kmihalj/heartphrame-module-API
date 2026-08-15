@@ -16,7 +16,11 @@ use Throwable;
  */
 final readonly class ApiMenuIntegration
 {
-    private const MENU_REPOSITORY = \AaiEduHr\HeartPhrameModuleMenu\Service\MenuConfigRepository::class;
+    /**
+     * HR: Class-string ostaje literal jer je Menu namjerno opcionalna integracija.
+     * EN: The class string remains literal because Menu is intentionally optional.
+     */
+    private const MENU_REPOSITORY = 'AaiEduHr\\HeartPhrameModuleMenu\\Service\\MenuConfigRepository';
 
     /**
      * HR: Prima container bez tvrde ovisnosti o opcionalnom Menu modulu.

@@ -30,7 +30,11 @@ final readonly class ApiKeyController
 {
     private const SESSION_KEY_ONE_TIME_TOKEN = 'auth_api_key_one_time_token';
 
-    private const MENU_RENDERER_CLASS = \AaiEduHr\HeartPhrameModuleMenu\Service\MenuRenderer::class;
+    /**
+     * HR: Class-string ostaje literal jer je Menu namjerno opcionalna integracija.
+     * EN: The class string remains literal because Menu is intentionally optional.
+     */
+    private const MENU_RENDERER_CLASS = 'AaiEduHr\\HeartPhrameModuleMenu\\Service\\MenuRenderer';
 
     /**
      * HR: Inicijalizira administratorski ekran API ključeva.

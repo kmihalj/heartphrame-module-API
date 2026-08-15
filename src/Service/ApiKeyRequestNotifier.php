@@ -18,8 +18,12 @@ use Throwable;
  */
 final readonly class ApiKeyRequestNotifier
 {
+    /**
+     * HR: Class-string ostaje literal jer je Notification namjerno opcionalna integracija.
+     * EN: The class string remains literal because Notification is intentionally optional.
+     */
     private const NOTIFICATION_SERVICE =
-        \AaiEduHr\HeartPhrameModuleNotification\Service\NotificationService::class;
+        'AaiEduHr\\HeartPhrameModuleNotification\\Service\\NotificationService';
 
     /**
      * HR: Prima spremnik, korisnički servis i generator sigurnih poveznica.
