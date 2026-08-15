@@ -15,8 +15,10 @@ Domenske integracije su opcionalne i otkrivaju se samo iz uključenih modula:
 - Notification daje `notifications:*` za inbox vlasnika ključa.
 
 Smjer ovisnosti ostaje domenski neutralan: ti moduli izlažu javne servise i
-`config/api.php`, ali ne zahtijevaju API modul. API posjeduje HTTP adaptere i
-može se ukloniti bez prekida web workflowa.
+`config/api.php`, a API paket drže samo u `require-dev` radi testiranja
+adaptera. Svaki domenski modul posjeduje opcionalni HTTP kontroler i
+proširenje. Servisi se uvjetuju s `interface_exists`, pa uklanjanje API-ja
+uklanja HTTP granicu bez prekida web workflowa.
 
 Menu i Theme su samo opcionalne web integracije. E-mail je opcionalni interni
 transport. Nijedan od ta tri modula ne daje API resurse.

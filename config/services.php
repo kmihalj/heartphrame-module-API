@@ -7,24 +7,18 @@ use AaiEduHr\HeartPhrameModuleApi\Controller\ApiKeyRequestController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiPreflightController;
 use AaiEduHr\HeartPhrameModuleApi\Account\ApiKeyAccountSectionProvider;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiRootController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\AuditResourceController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\AuthResourceController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\CalendarResourceController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\EditorHtmlResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\MeController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\NotificationResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\OpenApiController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\TaskResourceController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\WorkspaceResourceController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\WorkspaceSearchResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\WebhookResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Command\HpApiCommand;
+use AaiEduHr\HeartPhrameModuleApi\Contract\ApiRouteRegistry;
 use AaiEduHr\HeartPhrameModuleApi\Http\ApiResponseFactory;
 use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiAuthenticationMiddleware;
 use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiCorsMiddleware;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiCorsRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiCursorPaginator;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiEntityTagService;
+use AaiEduHr\HeartPhrameModuleApi\Service\ApiExtensionRegistry;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiMenuIntegration;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiKeyRequestNotifier;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiKeyRequestService;
@@ -33,29 +27,15 @@ use AaiEduHr\HeartPhrameModuleApi\Service\ApiRequestGuard;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiRequestActorContext;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiScopeRegistry;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiWebhookPublisher;
-use AaiEduHr\HeartPhrameModuleApi\Service\CalendarApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\EditorHtmlApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\NotificationApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\OpenApiDocumentService;
-use AaiEduHr\HeartPhrameModuleApi\Service\TaskApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceSearchApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleApi\Service\StreamWebhookTransport;
 use AaiEduHr\HeartPhrameModuleApi\Service\WebhookConfig;
 use AaiEduHr\HeartPhrameModuleApi\Service\WebhookOutboxWorker;
 use AaiEduHr\HeartPhrameModuleApi\Service\WebhookSubscriptionService;
 use AaiEduHr\HeartPhrameModuleApi\Service\WebhookTargetPolicy;
 use AaiEduHr\HeartPhrameModuleApi\Service\WebhookTransportInterface;
-use AaiEduHr\HeartPhrameModuleAuth\Service\AuthAdministrationApiService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthApiKeyService;
-use AaiEduHr\HeartPhrameModuleAuth\Service\AuthAuditLogService;
 use AaiEduHr\HeartPhrameModuleAuth\Service\AuthUserService;
-use AaiEduHr\HeartPhrameModuleCalendar\Api\CalendarApiService;
-use AaiEduHr\HeartPhrameModuleEditorHtml\Api\EditorHtmlApiService;
-use AaiEduHr\HeartPhrameModuleNotification\Service\NotificationService;
-use AaiEduHr\HeartPhrameModuleTask\Api\TaskApiService;
-use AaiEduHr\HeartPhrameModuleWorkspace\Api\WorkspaceApiService;
-use AaiEduHr\HeartPhrameModuleWorkspaceSearch\Service\WorkspaceSearchService;
 use AaiEduHr\HeartPhrameModuleOrm\Database\Database;
 use HeartPhrame\Alert\AlertHandler;
 use HeartPhrame\Authn\AuthnHandlerInterface;
@@ -80,6 +60,17 @@ $services = [
         new ApiScopeRegistry(
             $container->get(ComposerBridge::class),
             $container->get(ConfigInterface::class),
+        ),
+
+    ApiRouteRegistry::class => static fn(ContainerInterface $container): ApiRouteRegistry =>
+        new ApiRouteRegistry($container->get(Routes::class)),
+
+    ApiExtensionRegistry::class => static fn(ContainerInterface $container): ApiExtensionRegistry =>
+        new ApiExtensionRegistry(
+            $container->get(ComposerBridge::class),
+            $container->get(ConfigInterface::class),
+            $container,
+            $container->get(ApiRouteRegistry::class),
         ),
 
     ApiEntityTagService::class => static fn(ContainerInterface $container): ApiEntityTagService =>
@@ -217,79 +208,6 @@ $services = [
     ApiPreflightController::class => static fn(ContainerInterface $container): ApiPreflightController =>
         new ApiPreflightController($container->get(ResponseFactory::class)),
 
-    AuditResourceController::class => static fn(ContainerInterface $container): AuditResourceController =>
-        new AuditResourceController(
-            $container->get(ApiResponseFactory::class),
-            $container->has('AaiEduHr\\HeartPhrameModuleAudit\\Service\\AuditQueryService')
-                ? $container->get('AaiEduHr\\HeartPhrameModuleAudit\\Service\\AuditQueryService')
-                : $container->get(AuthAuditLogService::class),
-            $container->get(ApiCursorPaginator::class),
-            $container->get(LoggerInterface::class),
-        ),
-
-    AuthResourceController::class => static fn(ContainerInterface $container): AuthResourceController =>
-        new AuthResourceController(
-            $container->get(ApiResponseFactory::class),
-            $container->get(AuthAdministrationApiService::class),
-            $container->get(ApiCursorPaginator::class),
-            $container->get(ApiEntityTagService::class),
-        ),
-
-    CalendarResourceController::class => static fn(ContainerInterface $container): CalendarResourceController =>
-        new CalendarResourceController(
-            $container->get(ApiResponseFactory::class),
-            $container->get(ResponseFactory::class),
-            $container->get(CalendarApiService::class),
-            $container->get(ApiCursorPaginator::class),
-            $container->get(ApiEntityTagService::class),
-        ),
-
-    WorkspaceResourceController::class => static fn(ContainerInterface $container): WorkspaceResourceController =>
-        new WorkspaceResourceController(
-            $container->get(ApiResponseFactory::class),
-            $container->get(ResponseFactory::class),
-            $container->get(WorkspaceApiService::class),
-            $container->get(ConfigInterface::class),
-            $container->get(ApiCursorPaginator::class),
-            $container->get(ApiEntityTagService::class),
-        ),
-
-    WorkspaceSearchResourceController::class =>
-        static fn(ContainerInterface $container): WorkspaceSearchResourceController =>
-            new WorkspaceSearchResourceController(
-                $container->get(ApiResponseFactory::class),
-                $container->get(WorkspaceSearchService::class),
-                $container->get(ConfigInterface::class),
-            ),
-
-    EditorHtmlResourceController::class => static fn(ContainerInterface $container): EditorHtmlResourceController =>
-        new EditorHtmlResourceController(
-            $container->get(ApiResponseFactory::class),
-            $container->get(ResponseFactory::class),
-            $container->get(EditorHtmlApiService::class),
-            $container->get(ConfigInterface::class),
-            $container->get(ApiCursorPaginator::class),
-            $container->get(ApiEntityTagService::class),
-        ),
-
-    TaskResourceController::class => static fn(ContainerInterface $container): TaskResourceController =>
-        new TaskResourceController(
-            $container->get(ApiResponseFactory::class),
-            $container->get(TaskApiService::class),
-            $container->get(ConfigInterface::class),
-            $container->get(ApiCursorPaginator::class),
-            $container->get(ApiEntityTagService::class),
-        ),
-
-    NotificationResourceController::class =>
-        static fn(ContainerInterface $container): NotificationResourceController =>
-            new NotificationResourceController(
-                $container->get(ApiResponseFactory::class),
-                $container->get(NotificationService::class),
-                $container->get(ApiCursorPaginator::class),
-                $container->get(ApiEntityTagService::class),
-            ),
-
     WebhookResourceController::class =>
         static fn(ContainerInterface $container): WebhookResourceController =>
             new WebhookResourceController(
@@ -297,54 +215,6 @@ $services = [
                 $container->get(WebhookSubscriptionService::class),
                 $container->get(ApiCursorPaginator::class),
                 $container->get(ApiEntityTagService::class),
-            ),
-
-    EditorHtmlApiRouteRegistrar::class =>
-        static fn(ContainerInterface $container): EditorHtmlApiRouteRegistrar =>
-            new EditorHtmlApiRouteRegistrar(
-                $container->get(ComposerBridge::class),
-                $container->get(ConfigInterface::class),
-                $container->get(Routes::class),
-            ),
-
-    CalendarApiRouteRegistrar::class =>
-        static fn(ContainerInterface $container): CalendarApiRouteRegistrar =>
-            new CalendarApiRouteRegistrar(
-                $container->get(ComposerBridge::class),
-                $container->get(ConfigInterface::class),
-                $container->get(Routes::class),
-            ),
-
-    TaskApiRouteRegistrar::class =>
-        static fn(ContainerInterface $container): TaskApiRouteRegistrar =>
-            new TaskApiRouteRegistrar(
-                $container->get(ComposerBridge::class),
-                $container->get(ConfigInterface::class),
-                $container->get(Routes::class),
-            ),
-
-    WorkspaceApiRouteRegistrar::class =>
-        static fn(ContainerInterface $container): WorkspaceApiRouteRegistrar =>
-            new WorkspaceApiRouteRegistrar(
-                $container->get(ComposerBridge::class),
-                $container->get(ConfigInterface::class),
-                $container->get(Routes::class),
-            ),
-
-    WorkspaceSearchApiRouteRegistrar::class =>
-        static fn(ContainerInterface $container): WorkspaceSearchApiRouteRegistrar =>
-            new WorkspaceSearchApiRouteRegistrar(
-                $container->get(ComposerBridge::class),
-                $container->get(ConfigInterface::class),
-                $container->get(Routes::class),
-            ),
-
-    NotificationApiRouteRegistrar::class =>
-        static fn(ContainerInterface $container): NotificationApiRouteRegistrar =>
-            new NotificationApiRouteRegistrar(
-                $container->get(ComposerBridge::class),
-                $container->get(ConfigInterface::class),
-                $container->get(Routes::class),
             ),
 
     ApiKeyController::class => static fn(ContainerInterface $container): ApiKeyController =>

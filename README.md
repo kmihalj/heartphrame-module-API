@@ -53,7 +53,7 @@ decision creates an in-app notification when Notification is enabled. An
 approved secret is encrypted only until its owner opens the secure one-time
 retrieval page; persistent notifications never contain plaintext secrets.
 
-## Core Auth endpoints
+## Discovery and contributed Auth endpoints
 
 ```text
 GET    /api/v1
@@ -68,8 +68,11 @@ POST   /api/v1/groups
 GET    /api/v1/groups/{groupId}
 PATCH  /api/v1/groups/{groupId}
 DELETE /api/v1/groups/{groupId}
-GET    /api/v1/audit
 ```
+
+`GET /api/v1` belongs to the API core. User and group routes are registered by
+Auth's `AuthApiExtension`; the central audit route is registered by Audit's
+`AuditApiExtension`. Removing either owning module removes only its own routes.
 
 Every endpoint requires `Authorization: Bearer <token>`. Local user and group
 administration additionally requires an active administrator as the key owner.
@@ -82,20 +85,22 @@ installed below `/hfc`, response links and `Location` headers use
 
 ## Modular scopes
 
-Each domain module may expose a neutral `config/api.php` descriptor without
-depending on this module. API reads descriptors only from modules listed in
-`app.modules.enabled`, then builds the scope catalog and key GUI dynamically.
-Removing or disabling a domain module also removes its scopes from new keys.
+Each domain module may expose `config/api.php` with a neutral scope descriptor
+and an optional extension class. API reads descriptors only from modules listed
+in `app.modules.enabled`, resolves extensions through the shared container, and
+builds both the route set and key GUI dynamically. The domain module owns its
+HTTP controller and route declaration; API supplies authentication, response
+contracts, request guards, and the collision-safe route registry. Removing or
+disabling a domain module removes both its routes and scopes.
 
-The optional Workspace integration adds `/api/v1/workspaces` routes and the
-`workspace:read` and `workspace:manage` scopes. The HTTP adapter remains in
-this module, while Workspace owns ACL and business rules. Disabling Workspace
-removes those routes without breaking the API module.
+The optional Workspace integration owns its `/api/v1/workspaces` controller,
+routes, `workspace:read`, and `workspace:manage` scopes. Workspace also owns
+ACL and business rules. Disabling Workspace removes those routes without
+breaking the API module.
 
 The optional HTML Editor integration adds 22 `/api/v1/pages` routes and the
 `page:*` and `attachment:*` scopes. Editor owns sanitization, versions,
-attachments, and the standalone/Workspace behavior; this module only adapts
-those operations to HTTP.
+attachments, standalone/Workspace behavior, and its HTTP adapter.
 
 The optional Calendar integration adds `calendar:read` and `calendar:write`
 routes for calendar/event CRUD, ACL, and ICS. The optional Task integration adds

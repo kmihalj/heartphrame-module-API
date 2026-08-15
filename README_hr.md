@@ -53,7 +53,7 @@ Odluka stvara obavijest kada je Notification uključen. Odobrena tajna ostaje
 šifrirana samo dok vlasnik ne otvori sigurnu stranicu za jednokratno
 preuzimanje; trajne obavijesti nikada ne sadrže čistu tajnu.
 
-## Osnovne Auth rute
+## Discovery i rute koje daje Auth
 
 ```text
 GET    /api/v1
@@ -68,8 +68,11 @@ POST   /api/v1/groups
 GET    /api/v1/groups/{groupId}
 PATCH  /api/v1/groups/{groupId}
 DELETE /api/v1/groups/{groupId}
-GET    /api/v1/audit
 ```
+
+`GET /api/v1` pripada API jezgri. Rute korisnika i grupa registrira Authov
+`AuthApiExtension`, a centralnu audit rutu Auditov `AuditApiExtension`.
+Uklanjanje vlasničkog modula uklanja samo njegove rute.
 
 Svaka ruta zahtijeva `Authorization: Bearer <token>`. Administracija lokalnih
 korisnika i grupa dodatno zahtijeva da vlasnik ključa bude aktivni
@@ -82,19 +85,22 @@ koriste `/hfc/api/v1/...`.
 
 ## Modularni scopeovi
 
-Svaki domenski modul može izložiti neutralni `config/api.php` bez ovisnosti o
-ovom modulu. API čita opise samo iz modula navedenih u
-`app.modules.enabled`, pa dinamički gradi katalog i GUI ključeva. Uklanjanje ili
-isključivanje domenskog modula uklanja njegove scopeove iz novih ključeva.
+Svaki domenski modul može izložiti `config/api.php` s neutralnim opisom scopeova
+i opcionalnom klasom proširenja. API čita opise samo iz modula navedenih u
+`app.modules.enabled`, proširenja razrješava iz zajedničkog spremnika te
+dinamički gradi rute, katalog i GUI ključeva. Domenski modul posjeduje svoj HTTP
+kontroler i deklaraciju ruta, dok API daje autentikaciju, ugovore odgovora,
+zaštite zahtjeva i registar koji sprječava kolizije. Isključivanje domenskog
+modula uklanja njegove rute i scopeove.
 
-Opcionalna Workspace integracija dodaje `/api/v1/workspaces` rute i scopeove
-`workspace:read` i `workspace:manage`. HTTP adapter ostaje u ovom modulu, a
-Workspace posjeduje ACL i poslovna pravila. Isključivanje Workspacea uklanja te
-rute bez narušavanja API modula.
+Opcionalna Workspace integracija posjeduje svoj `/api/v1/workspaces` kontroler,
+rute i scopeove `workspace:read` i `workspace:manage`. Workspace posjeduje i ACL
+te poslovna pravila. Isključivanje Workspacea uklanja te rute bez narušavanja
+API modula.
 
 Opcionalna HTML Editor integracija dodaje 22 `/api/v1/pages` rute te scopeove
 `page:*` i `attachment:*`. Editor posjeduje sanitizaciju, verzije, privitke i
-ponašanje sa ili bez Workspacea; ovaj modul te radnje samo prilagođava HTTP-u.
+ponašanje sa ili bez Workspacea te vlastiti HTTP adapter.
 
 Opcionalna Calendar integracija dodaje `calendar:read` i `calendar:write` rute
 za CRUD kalendara/događaja, ACL i ICS. Opcionalna Task integracija dodaje

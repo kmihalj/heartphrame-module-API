@@ -9,9 +9,10 @@ API modul obrađuje HTTP protokol, ali ne čita tablice drugih modula:
 
 1. `ApiAuthenticationMiddleware` provjerava Bearer ključ preko javnog Auth servisa.
 2. `ApiScopeRegistry` čita scope opise uključenih modula.
-3. Kontroler provjerava scope i delegira domenskom servisu.
-4. Domenski modul provodi poslovna pravila i vraća sigurni DTO.
-5. `ApiResponseFactory` stvara jedinstveni JSON ili `application/problem+json`.
+3. `ApiExtensionRegistry` traži od svakog uključenog vlasničkog modula da registrira rute.
+4. Vlasnički kontroler provjerava scope i delegira domenskom servisu.
+5. Domenski modul provodi poslovna pravila i vraća sigurni DTO.
+6. `ApiResponseFactory` stvara jedinstveni JSON ili `application/problem+json`.
 
 Takva podjela početniku jasno pokazuje gdje pripada nova funkcionalnost, a
 naprednom developeru omogućuje zamjenu HTTP sloja bez dupliranja domenskih
@@ -160,10 +161,11 @@ stvorila.
 
 ## Dodavanje novog modula
 
-Domenski modul dodaje `config/api.php` s resursima, dvojezičnim nazivima i
-scopeovima. Datoteka ne smije importati klase API modula. API modul može
-registrirati opcionalni kontroler koji poziva javni domenski servis, a nikada
-privatne tablice domenskog modula.
+Domenski modul dodaje `config/api.php` s resursima, dvojezičnim nazivima,
+scopeovima i klasom proširenja. Isti modul posjeduje proširenje i HTTP kontroler;
+kontroler poziva javni domenski servis, a nikada privatne tablice. Runtime
+servisi ostaju uvjetni kako bi domenski modul radio i bez API-ja.
+Potpuni primjer i testovi nalaze se u [Domenskim API proširenjima](extensions_hr.md).
 
 ## Backup i povrat
 

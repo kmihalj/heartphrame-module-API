@@ -15,8 +15,10 @@ Domain integrations are optional and discovered only from enabled modules:
 - Notification contributes `notifications:*` for the key owner's inbox.
 
 The dependency direction remains domain-neutral: these modules expose public
-services and `config/api.php`, but do not require the API module. API owns the
-HTTP adapters and may be removed without breaking web workflows.
+services and `config/api.php`, and keep the API package in `require-dev` only
+for adapter tests. Each domain module owns its optional HTTP controller and
+extension. Runtime service definitions are guarded by `interface_exists`, so
+removing API removes the HTTP boundary without breaking web workflows.
 
 Menu and Theme are optional web integrations only. E-mail is an optional
 internal transport. None of these three modules contributes API resources.

@@ -9,9 +9,10 @@ The API module handles HTTP but never reads another module's tables:
 
 1. `ApiAuthenticationMiddleware` verifies a Bearer key through Auth's public service.
 2. `ApiScopeRegistry` reads scope descriptors from enabled modules.
-3. A controller checks the scope and delegates to a domain service.
-4. The domain module applies business rules and returns a safe DTO.
-5. `ApiResponseFactory` produces consistent JSON or `application/problem+json`.
+3. `ApiExtensionRegistry` asks each enabled owner module to register its routes.
+4. The owner's controller checks the scope and delegates to its domain service.
+5. The domain module applies business rules and returns a safe DTO.
+6. `ApiResponseFactory` produces consistent JSON or `application/problem+json`.
 
 This separation shows beginners where new behavior belongs and lets advanced
 developers replace the HTTP boundary without duplicating domain rules.
@@ -158,10 +159,11 @@ notification or its originating business operation.
 
 ## Adding another module
 
-A domain module adds `config/api.php` with resources, bilingual labels, and
-scopes. The descriptor must not import API-module classes. The API module may
-register an optional controller that calls a public domain service, never the
-domain module's private tables.
+A domain module adds `config/api.php` with resources, bilingual labels, scopes,
+and its extension class. The same module owns the extension and HTTP controller;
+the controller calls a public domain service, never private tables. Runtime
+services remain conditional so the domain module still works without API.
+See [Domain API extensions](extensions_en.md) for a complete example and tests.
 
 ## Backup and restore
 

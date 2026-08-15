@@ -20,31 +20,7 @@
         },
         {
             "type": "vcs",
-            "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-calendar.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-html-editor.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/kmihalj/heartphrame-module-notification.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/kmihalj/heartphrame-module-task.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/kmihalj/heartphrame-module-workspace.git"
-        },
-        {
-            "type": "vcs",
             "url": "https://gitlab.opencode.hr/srce/aai-eduhr/heartphrame/heartphrame-module-menu.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/kmihalj/heartphrame-module-workspace-search.git"
         }
     ],
     "require": {
@@ -54,12 +30,6 @@
         "aaieduhr/heartphrame-module-orm": "dev-main"
     },
     "require-dev": {
-        "aaieduhr/heartphrame-module-calendar": "dev-main",
-        "aaieduhr/heartphrame-module-editor-html": "dev-main",
-        "aaieduhr/heartphrame-module-notification": "dev-main",
-        "aaieduhr/heartphrame-module-task": "dev-main",
-        "aaieduhr/heartphrame-module-workspace": "dev-main",
-        "aaieduhr/heartphrame-module-workspace-search": "dev-main",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10 || ^11",
         "rector/rector": "^2.0",
@@ -67,16 +37,9 @@
         "slevomat/coding-standard": "^8"
     },
     "suggest": {
-        "aaieduhr/heartphrame-module-audit": "Exposes the central activity audit through the existing audit:read endpoint when installed.",
         "aaieduhr/heartphrame-module-backup": "Adds encrypted backup and restore for API key requests and webhook subscriptions; transient delivery state is excluded.",
-        "aaieduhr/heartphrame-module-calendar": "Exposes ACL-aware calendar, event, and ICS endpoints.",
-        "aaieduhr/heartphrame-module-editor-html": "Exposes ACL-aware pages, versions, translations, and attachment endpoints.",
         "aaieduhr/heartphrame-module-menu": "Adds API-key administration to configurable settings navigation.",
-        "aaieduhr/heartphrame-module-notification": "Exposes the API-key owner's notification inbox and read state.",
-        "aaieduhr/heartphrame-module-task": "Exposes task state and audit endpoints for published Editor pages.",
-        "aaieduhr/heartphrame-module-theme": "Applies configured light and dark visual tokens to API-key administration screens.",
-        "aaieduhr/heartphrame-module-workspace": "Exposes ACL-aware Workspace resources and tree management endpoints.",
-        "aaieduhr/heartphrame-module-workspace-search": "Exposes ACL-aware Workspace title and content search."
+        "aaieduhr/heartphrame-module-theme": "Applies configured light and dark visual tokens to API-key administration screens."
     },
     "autoload": {
         "psr-4": {

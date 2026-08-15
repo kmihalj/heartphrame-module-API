@@ -7,8 +7,6 @@ use AaiEduHr\HeartPhrameModuleApi\Controller\ApiKeyController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiKeyRequestController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiPreflightController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\ApiRootController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\AuditResourceController;
-use AaiEduHr\HeartPhrameModuleApi\Controller\AuthResourceController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\MeController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\OpenApiController;
 use AaiEduHr\HeartPhrameModuleApi\Controller\WebhookResourceController;
@@ -16,13 +14,8 @@ use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiAuthenticationMiddleware;
 use AaiEduHr\HeartPhrameModuleApi\Middleware\ApiCorsMiddleware;
 use AaiEduHr\HeartPhrameModuleApi\ModuleApi;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiCorsRouteRegistrar;
+use AaiEduHr\HeartPhrameModuleApi\Service\ApiExtensionRegistry;
 use AaiEduHr\HeartPhrameModuleApi\Service\ApiMenuIntegration;
-use AaiEduHr\HeartPhrameModuleApi\Service\CalendarApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\EditorHtmlApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\NotificationApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\TaskApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceApiRouteRegistrar;
-use AaiEduHr\HeartPhrameModuleApi\Service\WorkspaceSearchApiRouteRegistrar;
 use AaiEduHr\HeartPhrameModuleAuth\Account\AuthAccountSectionRegistry;
 use AaiEduHr\HeartPhrameModuleAuth\Middleware\RequireAdminOrBootstrapMiddleware;
 use AaiEduHr\HeartPhrameModuleAuth\Middleware\RequireAuthenticatedUserMiddleware;
@@ -125,60 +118,6 @@ return new class extends \HeartPhrame\Module\AbstractModuleManifest {
                 '/api/v1/openapi.json',
                 OpenApiController::class . '@show',
                 'api.v1.openapi',
-                $api,
-            ],
-            ['GET', '/api/v1/audit', AuditResourceController::class . '@listEvents', 'api.v1.audit.list', $api],
-            ['GET', '/api/v1/users', AuthResourceController::class . '@listUsers', 'api.v1.users.list', $api],
-            ['POST', '/api/v1/users', AuthResourceController::class . '@createUser', 'api.v1.users.create', $api],
-            ['GET', '/api/v1/users/{userId}', AuthResourceController::class . '@getUser', 'api.v1.users.get', $api],
-            [
-                'PATCH',
-                '/api/v1/users/{userId}',
-                AuthResourceController::class . '@updateUser',
-                'api.v1.users.update',
-                $api,
-            ],
-            [
-                'DELETE',
-                '/api/v1/users/{userId}',
-                AuthResourceController::class . '@deleteUser',
-                'api.v1.users.delete',
-                $api,
-            ],
-            [
-                'PUT',
-                '/api/v1/users/{userId}/groups',
-                AuthResourceController::class . '@replaceUserGroups',
-                'api.v1.users.groups.replace',
-                $api,
-            ],
-            ['GET', '/api/v1/groups', AuthResourceController::class . '@listGroups', 'api.v1.groups.list', $api],
-            [
-                'POST',
-                '/api/v1/groups',
-                AuthResourceController::class . '@createGroup',
-                'api.v1.groups.create',
-                $api,
-            ],
-            [
-                'GET',
-                '/api/v1/groups/{groupId}',
-                AuthResourceController::class . '@getGroup',
-                'api.v1.groups.get',
-                $api,
-            ],
-            [
-                'PATCH',
-                '/api/v1/groups/{groupId}',
-                AuthResourceController::class . '@updateGroup',
-                'api.v1.groups.update',
-                $api,
-            ],
-            [
-                'DELETE',
-                '/api/v1/groups/{groupId}',
-                AuthResourceController::class . '@deleteGroup',
-                'api.v1.groups.delete',
                 $api,
             ],
             [
@@ -353,39 +292,9 @@ return new class extends \HeartPhrame\Module\AbstractModuleManifest {
     {
         return [
             static function (ContainerInterface $container): void {
-                $registrar = $container->get(CalendarApiRouteRegistrar::class);
-                if ($registrar instanceof CalendarApiRouteRegistrar) {
-                    $registrar->register();
-                }
-            },
-            static function (ContainerInterface $container): void {
-                $registrar = $container->get(TaskApiRouteRegistrar::class);
-                if ($registrar instanceof TaskApiRouteRegistrar) {
-                    $registrar->register();
-                }
-            },
-            static function (ContainerInterface $container): void {
-                $registrar = $container->get(NotificationApiRouteRegistrar::class);
-                if ($registrar instanceof NotificationApiRouteRegistrar) {
-                    $registrar->register();
-                }
-            },
-            static function (ContainerInterface $container): void {
-                $registrar = $container->get(EditorHtmlApiRouteRegistrar::class);
-                if ($registrar instanceof EditorHtmlApiRouteRegistrar) {
-                    $registrar->register();
-                }
-            },
-            static function (ContainerInterface $container): void {
-                $registrar = $container->get(WorkspaceApiRouteRegistrar::class);
-                if ($registrar instanceof WorkspaceApiRouteRegistrar) {
-                    $registrar->register();
-                }
-            },
-            static function (ContainerInterface $container): void {
-                $registrar = $container->get(WorkspaceSearchApiRouteRegistrar::class);
-                if ($registrar instanceof WorkspaceSearchApiRouteRegistrar) {
-                    $registrar->register();
+                $registry = $container->get(ApiExtensionRegistry::class);
+                if ($registry instanceof ApiExtensionRegistry) {
+                    $registry->registerEnabled();
                 }
             },
             static function (ContainerInterface $container): void {
