@@ -36,7 +36,7 @@ final readonly class ApiKeyAccountSectionProvider implements AuthAccountSectionP
      *
      * EN: Returns the partial descriptor with the user's requests and new-request form.
      *
-     * @return array{key:string,package:string,partial:string,data:array<string,mixed>}|null
+     * @return array{key:string,package:string,partial:string,data:array<string,mixed>,group:string,order:int}|null
      */
     public function sectionForUser(int $userId): ?array
     {
@@ -57,6 +57,8 @@ final readonly class ApiKeyAccountSectionProvider implements AuthAccountSectionP
             'key' => 'api-key-requests',
             'package' => ModuleApi::PACKAGE_NAME,
             'partial' => 'api/account_key_requests',
+            'group' => 'security',
+            'order' => 300,
             'data' => [
                 'requests' => $requests,
                 'hasPendingRequest' => $hasPending,
